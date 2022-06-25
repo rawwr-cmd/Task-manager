@@ -1,46 +1,39 @@
 import React, { useState, useEffect } from "react";
 import NewTask from "./components/NewTask/NewTask";
 import Tasks from "./components/Tasks/Tasks";
+import useHttp from "./components/hooks/useHttp";
 
 const App = () => {
   const [isTask, setIsTask] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setIsError] = useState(null);
 
-  const fetchTasks = async (taskText) => {
-    setIsLoading(true);
-    setIsError(null);
+  const transformTasks = (tasksObj) => {
+    const loadedData = [];
 
-    try {
-      const response = await fetch(
-        "https://bonkers-taskmanager-default-rtdb.firebaseio.com/tasks.json"
-      );
-
-      if (!response.ok) {
-        throw new Error("LMAO WE MESSED UP OUR BACKEND");
-      }
-
-      const data = await response.json();
-      const loadedData = [];
-
-      for (const key in data) {
-        loadedData.push({
-          id: key,
-          ...data[key],
-          //same as:
-          //   loadedData.push({
-          //     id: key,
-          //     text: data[key].text
-          //   })
-        });
-      }
-
-      setIsTask(loadedData);
-    } catch (error) {
-      setIsError(error.message || "Something went wrong");
+    for (const key in tasksObj) {
+      loadedData.push({
+        id: key,
+        ...tasksObj[key],
+        //same as:
+        //   loadedData.push({
+        //     id: key,
+        //     text: tasksObj[key].text
+        //   })
+      });
     }
-    setIsLoading(false);
+
+    setIsTask(loadedData);
   };
+
+  const {
+    isLoading,
+    error,
+    sendRequest: fetchTasks,
+  } = useHttp(
+    {
+      url: "https://bonkers-taskmanager-default-rtdb.firebaseio.com/tasks.json",
+    },
+    transformTasks
+  );
 
   useEffect(() => {
     fetchTasks();
