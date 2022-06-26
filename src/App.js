@@ -6,38 +6,32 @@ import useHttp from "./components/hooks/useHttp";
 const App = () => {
   const [isTask, setIsTask] = useState([]);
 
-  const transformTasks = (tasksObj) => {
-    const loadedData = [];
-
-    for (const key in tasksObj) {
-      loadedData.push({
-        id: key,
-        ...tasksObj[key],
-        //same as:
-        //   loadedData.push({
-        //     id: key,
-        //     text: tasksObj[key].text
-        //   })
-      });
-    }
-
-    setIsTask(loadedData);
-  };
-
-  const {
-    isLoading,
-    error,
-    sendRequest: fetchTasks,
-  } = useHttp(
-    {
-      url: "https://bonkers-taskmanager-default-rtdb.firebaseio.com/tasks.json",
-    },
-    transformTasks
-  );
+  const { isLoading, error, sendRequest: fetchTasks } = useHttp();
 
   useEffect(() => {
-    fetchTasks();
-  }, []);
+    //Function to get used by applyData
+    const transformTasks = (tasksObj) => {
+      const loadedData = [];
+
+      for (const key in tasksObj) {
+        loadedData.push({
+          id: key,
+          ...tasksObj[key],
+          //     text: tasksObj[key].text
+          //   })
+        });
+      }
+
+      setIsTask(loadedData);
+    };
+
+    fetchTasks(
+      {
+        url: "https://bonkers-taskmanager-default-rtdb.firebaseio.com/tasks.json",
+      },
+      transformTasks
+    );
+  }, [fetchTasks]);
 
   const taskAddHandler = (task) => {
     setIsTask((prevTasks) => prevTasks.concat(task));
